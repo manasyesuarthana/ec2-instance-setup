@@ -37,9 +37,9 @@ If we want to interact with the machine, we have to use SSH. In order for us to 
 The key type I chose is RSA, meaning that the algorithm used to create the key pair is RSA. Upon creation, the key should be downloaded to our computer, which we can use for the SSH machine login later.
 
 ### 5. Configure Network Security Group
-Furthermore, we also need to state what type of traffic the instance can recieve and from where. This is done through **Security Groups**. For our task, we will need to allow SSH from our machine (to login) and HTTP from the internet as we are hosting a static website.
+Furthermore, we also need to state what type of traffic the instance can recieve and from where. This is done through **Security Groups**. For this, we will need to allow SSH from our local machine (to remotely login) and HTTP from the internet as we are hosting a static website. I called the security group `mylearning-dev-sg`.
 
-This is done by choosing the followin options:
+This is done by choosing the following options:
 
 ![alt text](images/image-4.png)
 
@@ -52,21 +52,24 @@ Below is the script I used:
 **setup_and_deploy.sh:**
 ```bash
 #!/bin/bash
+
 SVC="httpd"
 ARTIFACT="2137_barista_cafe"
-URL="https://www.tooplate.com/zip-templates/$ARTIFACT.zip
-yum install zip unzip $SVC -y
+URL="https://www.tooplate.com/zip-templates/$ARTIFACT.zip"
+
+sudo yum install zip unzip $SVC -y
 
 mkdir /tmp/webfiles
 cd /tmp/webfiles
 wget $URL
 unzip $ARTIFACT.zip
-cp -r $ARTIFACT/* /var/www/html
+sudo cp -r $ARTIFACT/* /var/www/html
 
-rm -rf /tmp/webfiles
+sudo rm -rf /tmp/webfiles
 
-systemctl start $SVC
-systemctl enable $SVC
+sudo systemctl start $SVC
+sudo systemctl enable $SVC
+
 
 ```
 
@@ -75,6 +78,47 @@ Go to advanced settings, scroll to the very bottom until you see **User data**. 
 ![alt text](images/image-5.png)
 
 ### 7. Launch the Instance
-With all the required steps done, the instance can then be launched. We can do this by pressing the "Launch Instance" button on the bottom right. 
+With all the required steps done, the instance can then be launched. We can do this by pressing the "Launch Instance" button on the bottom right. This will prompt AWS to launch a new instance based on the configurations we previously gave.
 
 ![alt text](images/image-6.png)
+
+The new instance, including its details such as its private and public IP can be seen in the **EC2 dashboard**. The instance will be in an "Initializing" status, which means that the instance is getting set up:
+
+![alt text](images/image-7.png)
+
+Eventually, it will reach an "2/2 Checks Passed" status, in which it is ready to be used: 
+
+
+### 8. Access the website
+Since we provisioned the instance to automatically host the static website, we can access the site through its public IP. Simply enter this information into your local browser:
+
+![alt text](images/image-9.png)
+
+### 9. SSH Login into the Instance
+To interact with the OS of the instance we need to SSH login into the machine. As usual, we would need the `.pem` key that we created previously. Mine was `mylearning-dev-key.pem`. Locate the key and run the following commands:
+
+```bash
+chmod 400 mylearning-dev-key.pem
+ssh -i mylearning-dev-key.pem ec2-user@<server_public_ip>
+```
+
+This allows us to login as `ec2-user` into the instance.
+
+```
+$ ssh -i ~/.ssh/mylearning-dev-key-web ec2-user@<server's_public_ip>
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '<server_public_ip>' to the list of known hosts.
+   ,     #_
+   ~\_  ####_        Amazon Linux 2023
+  ~~  \_#####\
+  ~~     \###|
+  ~~       \#/ ___   https://aws.amazon.com/linux/amazon-linux-2023
+   ~~       V~' '->
+    ~~~         /
+      ~~._.   _/
+         _/ _/
+       _/m/'
+[ec2-user@<server_public_ip> ~]$
+```
+Now you can whatever the hell you want with the instance!!! Have fun!!!
+
