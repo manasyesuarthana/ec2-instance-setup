@@ -105,7 +105,7 @@ ssh -i mylearning-dev-key.pem ec2-user@<server_public_ip>
 This allows us to login as `ec2-user` into the instance.
 
 ```
-$ ssh -i ~/.ssh/mylearning-dev-key-web ec2-user@<server's_public_ip>
+$ ssh -i "mylearning-dev-key.pem" ec2-user@<server's_public_ip>
 Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
 Warning: Permanently added '<server_public_ip>' to the list of known hosts.
    ,     #_
